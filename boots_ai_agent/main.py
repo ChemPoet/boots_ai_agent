@@ -1,4 +1,5 @@
 # Putting all imports at the top lets anyone reading the file see its dependencies at a glance, ensures missing packages fail immediately `(ModuleNotFoundError)` before any other code runs.
+import argparse
 import os
 
 from dotenv import load_dotenv
@@ -19,18 +20,23 @@ def main():
         api_key=api_key,
     )
 
+    parser = argparse.ArgumentParser(description="Chatbot")
+    parser.add_argument("user_prompt", type=str, help="User prompt")
+    args = parser.parse_args()
+# Now we can access `args.user_prompt`
+
     response = client.chat.completions.create(
         model="openrouter/free",
         messages=[
             {
                 "role": "user",
-                "content": "Why is Boot.dev such a great place to learn backend development? Use one paragraph maximum.",
+                "content": args.user_prompt,
             }
         ],
     )
     if response.usage == None:
         raise RuntimeError ("API request may have failed. Please try again.")
-    # print("User prompt: Why is Boot.dev such a great place to learn backend development? Use one paragraph maximum.")
+    print(f"User prompt: {args.user_prompt}")
     print(f"Prompt tokens: {response.usage.prompt_tokens}")
     print(f"Response tokens: {response.usage.completion_tokens}")
     print(f"Response:\n{response.choices[0].message.content}")

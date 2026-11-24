@@ -9,13 +9,16 @@ from openai import OpenAI
 
 # Reusable code (functions, classes, constants) that other files might want to import should be defined at the top level of the file—outside of `def main():` and outside the `if __name__ == "__main__":` guard.
 
+parser = argparse.ArgumentParser(description="Chatbot")
+parser.add_argument("user_prompt", type=str, help="User prompt")
+args = parser.parse_args()
+    # Now we can access `args.user_prompt` throughout 'main.py'.
+parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
+    # Now we can activate verbose outputs using the variable `args.verbose` either BEFORE or AFTER the user prompt.
+
 def main():
     # print("Hello from boots-ai-agent!")
-    parser = argparse.ArgumentParser(description="Chatbot")
-    parser.add_argument("user_prompt", type=str, help="User prompt")
-    args = parser.parse_args()
-    # Now we can access `args.user_prompt` throughout 'main()'.
-    
+        
     load_dotenv()
     api_key = os.environ.get("OPENROUTER_API_KEY")
     if api_key == None:
@@ -30,7 +33,7 @@ def main():
     messages = [
         {"role": "user", "content": args.user_prompt},
     ]
-
+            
     generate_content(client, messages)
     
 def generate_content(client: OpenAI, messages: list) -> None:
@@ -41,9 +44,13 @@ def generate_content(client: OpenAI, messages: list) -> None:
     if response.usage == None:
         raise RuntimeError ("API request may have failed. Please try again.")
     
-    print(f"Prompt tokens: {response.usage.prompt_tokens}")
-    print(f"Response tokens: {response.usage.completion_tokens}")
-    print(f"Response:\n{response.choices[0].message.content}")
+    if args.verbose is True:
+        print("User prompt: ", args.user_prompt)
+        print(f"Prompt tokens: {response.usage.prompt_tokens}")
+        print(f"Response tokens: {response.usage.completion_tokens}")
+        print(f"Response:\n{response.choices[0].message.content}")
+    else:
+        print(f"Response:\n{response.choices[0].message.content}")
 
 # Guard statement ensuring `main()` only runs when you execute the file directly, not when another script imports it.
 if __name__ == "__main__":
